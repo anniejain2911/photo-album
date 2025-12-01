@@ -1,0 +1,29 @@
+version: 0.2
+
+env:
+  variables:
+    REGION: us-west-2
+    LAMBDA1: index-photos
+    LAMBDA2: search-photos
+
+phases:
+  install:
+    commands:
+      - echo "Using AWS CLI in CodeBuild image"
+  build:
+    commands:
+      # Zip each lambda from backend/ folders
+      - cd backend/index-photos
+      - zip -r ../../index-photos.zip .
+      - cd ../search-photos
+      - zip -r ../../search-photos.zip .
+      - cd ../..
+
+      # Update Lambda code
+      - aws lambda update-function-code --region $REGION --function-name $LAMBDA1 --zip-file fileb://index-photos.zip
+      - aws lambda update-function-code --region $REGION --function-name $LAMBDA2 --zip-file fileb://search-photos.zip
+
+artifacts:
+  files:
+    - index-photos.zip
+    - search-photos.zip

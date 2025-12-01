@@ -1,0 +1,16 @@
+version: 0.2
+
+env:
+  variables:
+    REGION: us-west-2
+    SITE_BUCKET: photo-album--site-b2
+
+phases:
+  build:
+    commands:
+      - cd frontend
+      - aws s3 sync . s3://$SITE_BUCKET --delete --cache-control "no-cache"
+artifacts:
+  files:
+    - '**/*'
+  base-directory: frontend
