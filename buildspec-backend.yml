@@ -2,28 +2,25 @@ version: 0.2
 
 env:
   variables:
-    REGION: us-west-2
-    LAMBDA1: index-photos
-    LAMBDA2: search-photos
+    INDEX_FN: index-photos
+    SEARCH_FN: search-photos
 
 phases:
   install:
-    commands:
-      - echo "Using AWS CLI in CodeBuild image"
+    runtime-versions:
+      python: 3.11
   build:
     commands:
-      # Zip each lambda from backend/ folders
-      - cd backend/index-photos
-      - zip -r ../../index-photos.zip .
-      - cd ../search-photos
-      - zip -r ../../search-photos.zip .
-      - cd ../..
-
-      # Update Lambda code
-      - aws lambda update-function-code --region $REGION --function-name $LAMBDA1 --zip-file fileb://index-photos.zip
-      - aws lambda update-function-code --region $REGION --function-name $LAMBDA2 --zip-file fileb://search-photos.zip
+      - set -e
+      - mkdir -p dist
+      # Zip each Lambda from your backend folder
+      - zip -j dist/index-photos.zip backend/LF1.py
+      - zip -j dist/search-photos.zip backend/LF2.py
+  post_build:
+    commands:
+      - aws lambda update-function-code --function-name "$INDEX_FN"   --zip-file fileb://dist/index-photos.zip
+      - aws lambda update-function-code --function-name "$SEARCH_FN"  --zip-file fileb://dist/search-photos.zip
 
 artifacts:
   files:
-    - index-photos.zip
-    - search-photos.zip
+    - dist/**/*
